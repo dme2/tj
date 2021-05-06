@@ -1,25 +1,26 @@
 #include <stdio.h>
 #include <pthread.h>
 #include "tj.h"
-void* PrintHello(void* data){
 
-	printf("received data");
+void* PrintHello(void* d){
+	printf("running print function: Hello\n");
 }
 
 int main(){
-	int rc;
-	pthread_t id;
-	int t = 12;
+  pool* p = initPool(5); //initialize pool with 5 threads
 
-	rc = pthread_create(&id, NULL, PrintHello, (void*) t);
-/*
-	if(rc){
-		printf("error");
-		exit(1);
+  //enqueue 20 jobs
+  for(int i = 0; i < 20; i++){
+	job_node* jn = buildJobNode((void*)PrintHello, NULL);
+	int err = enqueueJob(p->queue,jn);
+	if (err){
+		printf("queue error");
+		return -1;
 	}
-	*/
+  }
 
-	printf("created thread\n");
-	pthread_exit(NULL);
+  poolWait(p);
+  printf("killing threads\n");
+  drainPool(p);
+  return 0;
 }
-
