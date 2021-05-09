@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <pthread.h>
@@ -8,7 +9,8 @@
  *   [x] finish initThread
  *   [x] add functionality to test program
  *   [x] finish threadLoop
- *   []  add destructors (job queue, pool, thread)
+ *   [x] add destructors (job queue, pool, thread)
+ *   []  add thread condition for waiting
  *   []  add debuging info
  *   []  fix threadwait
  * */
@@ -106,6 +108,7 @@ job_node* pullJob(job_queue* jq){
 		  jq->head = NULL;
 		}
 		job = j;
+		jq->len -= 1;
 	}
 
 	pthread_mutex_unlock(&jq_mutex);
@@ -131,6 +134,7 @@ int enqueueJob(job_queue* jq, job_node* job){
 	jq->tail->next=job;
 	jq->tail = job;
   }
+  jq->len+=1;
   pthread_mutex_unlock(&jq_mutex);
 
   return 0;
@@ -172,15 +176,42 @@ static void* threadLoop(thread* thrd) {
 }
 
 void poolWait(pool* p){
-  if (p == NULL)
-	return;
-  while(p->queue->len) {
+
+	while(p->queue->len != 0) {
 	//temporary and bad
 	sleep(0.5);
   }
 }
 
 int drainPool(pool* p){
+  //delete threads
+  for (int i = 0; i < p->size; i++){
+	free(p->threads[i]);
+  }
+
+  //delete jobs
+  job_node* cur = NULL;
+  if (p->queue->head){
+	cur = p->queue->head;
+  }
+
+  uint8_t s = p->queue->len;
+  for(int i = 0; i < s; i++){
+	if (cur == NULL){
+	  break;
+	}
+	job_node* nxt = NULL;
+
+	if(cur->next){
+	  nxt = cur->next;
+	}
+
+	free(cur);
+	cur = nxt;
+  }
+
+  //delete pool
   free(p);
+
   return 0;
 }

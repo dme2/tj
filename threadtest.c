@@ -4,6 +4,7 @@
 
 void* PrintHello(void* d){
 	printf("running print function: Hello\n");
+	return NULL;
 }
 
 int main(){
