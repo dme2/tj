@@ -6,8 +6,11 @@
 
 /* todo
  *   [x] finish initThread
- *   [] add functionality to test program
- *   [] finish threadLoop
+ *   [x] add functionality to test program
+ *   [x] finish threadLoop
+ *   []  add destructors (job queue, pool, thread)
+ *   []  add debuging info
+ *   []  fix threadwait
  * */
 
 pthread_mutex_t jq_mutex; //job queue mutex (for pushing and pulling)
